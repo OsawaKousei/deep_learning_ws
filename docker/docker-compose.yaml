@@ -1,8 +1,8 @@
 version: "3"
 
 services:
-  docker_o3d:
-    container_name: docker_o3d
+  docker_DL:
+    container_name: docker_DL
     build:
       context: .
       args:
@@ -14,13 +14,13 @@ services:
         - GIT_USER_NAME=${GIT_USER_NAME}
         - GIT_USER_EMAIL=${GIT_USER_EMAIL}
       dockerfile: Dockerfile
-    image: n622jwith/docker_o3d:latest
+    image: n622jwith/docker_DL:latest
     environment:
       - DISPLAY=${DISPLAY}
       - "QT_X11_NO_MITSHM=1"
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - $HOME/.Xauthority/:/home/${USER_NAME}/.Xauthority:ro
-    hostname: docker_o3d
+    hostname: docker_DL
     tty: true
     user: "${UID}:${GID}"
