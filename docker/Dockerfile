@@ -23,7 +23,6 @@ ENV TZ=Asia/Tokyo
 RUN apt-get update && \
     apt-get install -y libqt5gui5 && \
     rm -rf /var/lib/apt/lists/*
-ENV QT_DEBUG_PLUGINS=1
 
 # install basic tools
 RUN apt update &&\
