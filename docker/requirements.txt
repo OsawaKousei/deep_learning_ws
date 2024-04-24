@@ -3,6 +3,8 @@ black
 flake8
 isort
 mypy
+# needed for show plt
+PyQt5
 # tools for development
 numpy
 matplotlib
