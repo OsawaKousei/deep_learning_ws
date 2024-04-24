@@ -1,2 +1,8 @@
+# default formatting tools
+black
+flake8
+isort
+mypy
+# tools for development
 numpy
 matplotlib
