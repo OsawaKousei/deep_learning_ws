@@ -3,7 +3,7 @@ ARG CUDA_VERSION
 
 # refer from : https://hub.docker.com/r/nvidia/cuda/tags
 # please confirm base image tag name from above URL
-FROM nvidia/cuda:${CUDA_VERSION}-cudnn-devel-ubuntu22.04
+FROM nvidia/cuda:${CUDA_VERSION}-cudnn8-devel-ubuntu22.04
 
 # Upgrade OS
 RUN apt-get update -q && \
