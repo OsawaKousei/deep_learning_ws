@@ -1,8 +1,8 @@
 version: "3"
 
 services:
-  lm_basic:
-    container_name: lm_basic
+  dl_ws:
+    container_name: dl_ws
     build:
       context: .
       args:
@@ -16,14 +16,14 @@ services:
         - PYTHON_VERSION=${PYTHON_VERSION}
         - CUDA_VERSION=${CUDA_VERSION}
       dockerfile: Dockerfile
-    image: n622jwith/lm_basic:latest
+    image: n622jwith/dl_ws:latest
     environment:
       - DISPLAY=${DISPLAY}
       - "QT_X11_NO_MITSHM=1"
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - $HOME/.Xauthority/:/home/${USER_NAME}/.Xauthority:ro
-    hostname: lm_basic
+    hostname: dl_ws
     deploy:
       resources:
         reservations:
