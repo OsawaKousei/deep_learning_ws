@@ -1,95 +1,161 @@
+import matplotlib.pyplot as plt  # グラフ出力用module
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision
 
-torch.backends.cudnn.enabled = False
+BATCH_SIZE = 100
+WEIGHT_DECAY = 0.005
+LEARNING_RATE = 0.0001
+EPOCH = 100
+PATH = "dataset"
 
-# download the FashionMNIST dataset
-trainset = torchvision.datasets.FashionMNIST(
-    root="./data",
-    train=True,
-    download=True,
-    transform=torchvision.transforms.ToTensor(),
+transform = torchvision.transforms.Compose(
+    [
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize((0.5,), (0.5,)),
+    ]
+)
+
+trainset = torchvision.datasets.MNIST(
+    root=PATH, train=True, download=True, transform=transform
 )
 trainloader = torch.utils.data.DataLoader(
-    trainset, batch_size=64, shuffle=True
+    trainset, batch_size=BATCH_SIZE, shuffle=True, num_workers=1
 )
 
-testset = torchvision.datasets.FashionMNIST(
-    root="./data",
-    train=False,
-    download=True,
-    transform=torchvision.transforms.ToTensor(),
+testset = torchvision.datasets.MNIST(
+    root=PATH, train=False, download=True, transform=transform
 )
-testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
+testloader = torch.utils.data.DataLoader(
+    testset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1
+)  # Windows Osの方はnum_workers=1 または 0が良いかも
 
 
-# define the model
-class CNN(nn.Module):
-    def __init__(self) -> None:
-        super().__init__()
-        self.conv1: nn.Conv2d = nn.Conv2d(1, 6, 5)
-        self.pool: nn.MaxPool2d = nn.MaxPool2d(2)
-        self.conv2: nn.Conv2d = nn.Conv2d(6, 16, 5)
-        self.fc1: nn.Linear = nn.Linear(16 * 4 * 4, 120)
-        self.fc2: nn.Linear = nn.Linear(120, 10)
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool2d(2, stride=2)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.pool(self.conv1(x))
-        x = self.pool(self.conv2(x))
-        x = x.view(-1, 16 * 4 * 4)
+        self.conv1 = nn.Conv2d(1, 16, 3)
+        self.conv2 = nn.Conv2d(16, 32, 3)
+
+        self.fc1 = nn.Linear(32 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 10)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = x.view(x.size()[0], -1)
         x = self.fc1(x)
+        x = self.relu(x)
         x = self.fc2(x)
         return x
 
 
-# create an instance of the model
-model = CNN().cuda()
-
-# define the loss function
+device = torch.device("cuda:0")
+net = Net()
+net = net.to(device)
 criterion = nn.CrossEntropyLoss()
-# define the optimizer
-optimizer = optim.SGD(model.parameters(), lr=0.001)
+optimizer = optim.SGD(
+    net.parameters(), lr=LEARNING_RATE, momentum=0.9, weight_decay=WEIGHT_DECAY
+)
 
-# train the model
-for epoch in range(10):
-    running_loss = 0.0
-    for i, data in enumerate(trainloader, 0):
-        inputs, labels = data
-        inputs, labels = inputs.cuda(), labels.cuda()  # move to GPU
+train_loss_value = []  # trainingのlossを保持するlist
+train_acc_value = []  # trainingのaccuracyを保持するlist
+test_loss_value = []  # testのlossを保持するlist
+test_acc_value = []  # testのaccuracyを保持するlist
 
+for epoch in range(EPOCH):
+    print("epoch", epoch + 1)  # epoch数の出力
+    for inputs, labels in trainloader:
+        inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
-
-        outputs = model(inputs)
+        outputs = net(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
 
-        running_loss += loss.item()
-        if i % 2000 == 1999:
-            print(
-                "[%d, %5d] loss: %.3f"
-                % (epoch + 1, i + 1, running_loss / 2000)
-            )
-            running_loss = 0.0
+    sum_loss = 0.0  # lossの合計
+    sum_correct = 0  # 正解率の合計
+    sum_total = 0  # dataの数の合計
 
-print("Finished Training")
+    # train dataを使ってテストをする(パラメータ更新がないようになっている)
+    for inputs, labels in trainloader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        optimizer.zero_grad()
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
+        sum_loss += loss.item()  # lossを足していく
+        _, predicted = outputs.max(1)  # 出力の最大値の添字(予想位置)を取得
+        sum_total += labels.size(
+            0
+        )  # labelの数を足していくことでデータの総和を取る
+        sum_correct += (
+            (predicted == labels).sum().item()
+        )  # 予想位置と実際の正解を比べ,正解している数だけ足す
+    print(
+        "train mean loss={}, accuracy={}".format(
+            sum_loss * BATCH_SIZE / len(trainloader.dataset),
+            float(sum_correct / sum_total),
+        )
+    )  # lossとaccuracy出力
+    train_loss_value.append(
+        sum_loss * BATCH_SIZE / len(trainloader.dataset)
+    )  # traindataのlossをグラフ描画のためにlistに保持
+    train_acc_value.append(
+        float(sum_correct / sum_total)
+    )  # traindataのaccuracyをグラフ描画のためにlistに保持
 
-# Get the first batch of training data
-dataiter = iter(trainloader)
-images, labels = next(dataiter)
+    sum_loss = 0.0
+    sum_correct = 0
+    sum_total = 0
 
-# Move the data to the GPU
-images, labels = images.cuda(), labels.cuda()
+    # test dataを使ってテストをする
+    for inputs, labels in testloader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        optimizer.zero_grad()
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
+        sum_loss += loss.item()
+        _, predicted = outputs.max(1)
+        sum_total += labels.size(0)
+        sum_correct += (predicted == labels).sum().item()
+    print(
+        "test  mean loss={}, accuracy={}".format(
+            sum_loss * BATCH_SIZE / len(testloader.dataset),
+            float(sum_correct / sum_total),
+        )
+    )
+    test_loss_value.append(sum_loss * BATCH_SIZE / len(testloader.dataset))
+    test_acc_value.append(float(sum_correct / sum_total))
 
-outputs = model(images)
-_, predicted = torch.max(outputs.data, 1)
+plt.figure(figsize=(6, 6))  # グラフ描画用
 
-correct = (predicted == labels).sum().item()
-total = labels.size(0)
+# 以下グラフ描画
+plt.plot(range(EPOCH), train_loss_value)
+plt.plot(range(EPOCH), test_loss_value, c="#00ff00")
+plt.xlim(0, EPOCH)
+plt.ylim(0, 2.5)
+plt.xlabel("EPOCH")
+plt.ylabel("LOSS")
+plt.legend(["train loss", "test loss"])
+plt.title("loss")
+plt.savefig("loss_image.png")
+plt.clf()
 
-print(
-    "Accuracy of the network on the test images: %.3f %%"
-    % (100 * correct / total)
-)
+plt.plot(range(EPOCH), train_acc_value)
+plt.plot(range(EPOCH), test_acc_value, c="#00ff00")
+plt.xlim(0, EPOCH)
+plt.ylim(0, 1)
+plt.xlabel("EPOCH")
+plt.ylabel("ACCURACY")
+plt.legend(["train acc", "test acc"])
+plt.title("accuracy")
+plt.show()
+plt.savefig("accuracy_image.png")
