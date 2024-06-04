@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Tuple
 
 import numpy as np
 
@@ -37,23 +37,24 @@ def cross_entropy_error(y: np.ndarray, t: np.ndarray) -> float:
 
 # numerical gradient
 def numerical_gradient(f: Callable, x: np.ndarray) -> np.ndarray:
-    h: float = 1e-4
+    h: float = 1e-4  # 0.0001
     grad: np.ndarray = np.zeros_like(x)
 
-    print(f"x.size: {x.size}")
-    print(f"x.shape: {x.shape}")
-    it = np.nditer(x, flags=["multi_index"], op_flags=["readwrite"])
+    it: np.nditer = np.nditer(
+        x, flags=["multi_index"], op_flags=["readwrite"]  # type: ignore
+    )
     while not it.finished:
-        idx = it.multi_index
-        tmp_val = x[idx]
+        idx: Tuple[int, ...] = it.multi_index
+        tmp_val: float = float(x[idx])
         x[idx] = tmp_val + h
-        fxh1: float = f(x)
+        fxh1: np.ndarray = f(x)  # f(x+h)
 
         x[idx] = tmp_val - h
-        fxh2: float = f(x)
-
+        fxh2: np.ndarray = f(x)  # f(x-h)
         grad[idx] = (fxh1 - fxh2) / (2 * h)
-        x[idx] = tmp_val
+
+        x[idx] = tmp_val  # restore the original value
+        it.iternext()
 
     return grad
 

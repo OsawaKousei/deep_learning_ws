@@ -61,8 +61,6 @@ class TwoLayerNet:
 
     # numerical gradient
     def numerical_gradient(self, x: np.ndarray, t: np.ndarray) -> dict:
-        print(f"x.shape: {x.shape}")
-        print(f"self.params['W1'].shape: {self.params['W1'].shape}")
         loss_W = lambda W: self.loss(x, t)
         grads = {}
         grads["W1"] = common.numerical_gradient(loss_W, self.params["W1"])

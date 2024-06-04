@@ -1,27 +1,23 @@
+# coding: utf-8
 import os
 import sys
 from collections import OrderedDict
-from typing import Dict
 
 import numpy as np
-from common import numerical_gradient
+from gradient import numerical_gradient
+from layers import Affine, Relu, SoftmaxWithLoss
 
-# from common import numerical_gradient
-from layer import Affine, Relu, SoftmaxWithLoss
-
-sys.path.append(os.pardir)
+sys.path.append(
+    os.pardir
+)  # 親ディレクトリのファイルをインポートするための設定
 
 
 class TwoLayerNet:
 
     def __init__(
-        self,
-        input_size: int,
-        hidden_size: int,
-        output_size: int,
-        weight_init_std: float = 0.01,
-    ) -> None:
-        # Initialize weights and biases
+        self, input_size, hidden_size, output_size, weight_init_std=0.01
+    ):
+        # 重みの初期化
         self.params = {}
         self.params["W1"] = weight_init_std * np.random.randn(
             input_size, hidden_size
@@ -32,35 +28,36 @@ class TwoLayerNet:
         )
         self.params["b2"] = np.zeros(output_size)
 
-        # Create layers
+        # レイヤの生成
         self.layers = OrderedDict()
         self.layers["Affine1"] = Affine(self.params["W1"], self.params["b1"])
         self.layers["Relu1"] = Relu()
         self.layers["Affine2"] = Affine(self.params["W2"], self.params["b2"])
 
-        self.last_layer = SoftmaxWithLoss()
+        self.lastLayer = SoftmaxWithLoss()
 
-    def predict(self, x: np.ndarray) -> np.ndarray:
+    def predict(self, x):
         for layer in self.layers.values():
             x = layer.forward(x)
 
         return x
 
-    def loss(self, x: np.ndarray, t: np.ndarray) -> float:
+    # x:入力データ, t:教師データ
+    def loss(self, x, t):
         y = self.predict(x)
-        return float(self.last_layer.forward(y, t))
+        return self.lastLayer.forward(y, t)
 
-    def accuracy(self, x: np.ndarray, t: np.ndarray) -> float:
+    def accuracy(self, x, t):
         y = self.predict(x)
         y = np.argmax(y, axis=1)
         if t.ndim != 1:
             t = np.argmax(t, axis=1)
+
         accuracy = np.sum(y == t) / float(x.shape[0])
         return accuracy
 
-    def numerical_gradient(
-        self, x: np.ndarray, t: np.ndarray
-    ) -> Dict[str, np.ndarray]:
+    # x:入力データ, t:教師データ
+    def numerical_gradient(self, x, t):
         loss_W = lambda W: self.loss(x, t)
 
         grads = {}
@@ -71,13 +68,13 @@ class TwoLayerNet:
 
         return grads
 
-    def gradient(self, x: np.ndarray, t: np.ndarray) -> Dict[str, np.ndarray]:
+    def gradient(self, x, t):
         # forward
         self.loss(x, t)
 
         # backward
         dout = 1
-        dout = self.last_layer.backward(dout)
+        dout = self.lastLayer.backward(dout)
 
         layers = list(self.layers.values())
         layers.reverse()
