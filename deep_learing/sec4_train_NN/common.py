@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Tuple
 
 import numpy as np
 
@@ -23,30 +23,38 @@ def sum_squared_error(y: np.ndarray, t: np.ndarray) -> float:
 # cross entropy error
 def cross_entropy_error(y: np.ndarray, t: np.ndarray) -> float:
     if y.ndim == 1:
-        t = t.reshape(1, -1)
-        y = y.reshape(1, -1)
-    delta: float = 1e-7
-    batch_size: int = y.shape[0]
+        t = t.reshape(1, t.size)
+        y = y.reshape(1, y.size)
+
+    if t.size == y.size:
+        t = t.argmax(axis=1)
+
+    batch_size = y.shape[0]
     return -float(
-        np.sum(np.log(y[np.arange(batch_size), t] + delta)) / batch_size
+        np.sum(np.log(y[np.arange(batch_size), t] + 1e-7)) / batch_size
     )
 
 
 # numerical gradient
 def numerical_gradient(f: Callable, x: np.ndarray) -> np.ndarray:
-    h: float = 1e-4
+    h: float = 1e-4  # 0.0001
     grad: np.ndarray = np.zeros_like(x)
 
-    for idx in range(x.size):
+    it: np.nditer = np.nditer(
+        x, flags=["multi_index"], op_flags=["readwrite"]  # type: ignore
+    )
+    while not it.finished:
+        idx: Tuple[int, ...] = it.multi_index
         tmp_val: float = float(x[idx])
         x[idx] = tmp_val + h
-        fxh1: float = f(x)
+        fxh1: np.ndarray = f(x)  # f(x+h)
 
         x[idx] = tmp_val - h
-        fxh2: float = f(x)
-
+        fxh2: np.ndarray = f(x)  # f(x-h)
         grad[idx] = (fxh1 - fxh2) / (2 * h)
-        x[idx] = tmp_val
+
+        x[idx] = tmp_val  # restore the original value
+        it.iternext()
 
     return grad
 

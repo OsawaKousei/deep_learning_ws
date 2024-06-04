@@ -36,7 +36,7 @@ class TwoLayerNet:
         a1 = np.dot(x, W1) + b1
         z1 = common.sigmoid(a1)
         a2 = np.dot(z1, W2) + b2
-        y = common.softmax(a2)
+        y: np.ndarray = common.softmax(a2)
 
         return y
 
@@ -56,16 +56,16 @@ class TwoLayerNet:
         return accuracy
 
     # loss function for weight
-    def loss_W(self, W: np.ndarray, x: np.ndarray, t: np.ndarray) -> float:
-        return self.loss(x, t)
+    # def loss_W(self, x: np.ndarray, t: np.ndarray) -> float:
+    #     return self.loss(x, t)
 
     # numerical gradient
     def numerical_gradient(self, x: np.ndarray, t: np.ndarray) -> dict:
-
+        loss_W = lambda W: self.loss(x, t)
         grads = {}
-        grads["W1"] = common.numerical_gradient(self.loss_W, self.params["W1"])
-        grads["b1"] = common.numerical_gradient(self.loss_W, self.params["b1"])
-        grads["W2"] = common.numerical_gradient(self.loss_W, self.params["W2"])
-        grads["b2"] = common.numerical_gradient(self.loss_W, self.params["b2"])
+        grads["W1"] = common.numerical_gradient(loss_W, self.params["W1"])
+        grads["b1"] = common.numerical_gradient(loss_W, self.params["b1"])
+        grads["W2"] = common.numerical_gradient(loss_W, self.params["W2"])
+        grads["b2"] = common.numerical_gradient(loss_W, self.params["b2"])
 
         return grads
