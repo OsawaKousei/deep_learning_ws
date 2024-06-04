@@ -7,7 +7,7 @@ import numpy as np
 from common import numerical_gradient
 
 # from common import numerical_gradient
-from layer import Affine, Relu, SoftmaxWithLoss
+from layers import Affine, Relu, SoftmaxWithLoss
 
 sys.path.append(os.pardir)
 
