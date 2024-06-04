@@ -29,11 +29,11 @@ testset = torchvision.datasets.MNIST(
 )
 testloader = torch.utils.data.DataLoader(
     testset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1
-)  # Windows Osの方はnum_workers=1 または 0が良いかも
+)
 
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self) -> None:
         super(Net, self).__init__()
         self.relu = nn.ReLU()
         self.pool = nn.MaxPool2d(2, stride=2)
@@ -44,7 +44,7 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(32 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 10)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv1(x)
         x = self.relu(x)
         x = self.pool(x)

@@ -53,6 +53,25 @@ RUN apt-get update \
     sudo && \
     rm -rf /var/lib/apt/lists/*
 
+# Install pkgs for PyQt5
+RUN apt-get update && \
+    apt-get install -y \
+    libxkbcommon-x11-0 \
+    libxcb-xinerama0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-randr0 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libxcb-shm0 \
+    libxcb-sync1 \
+    libxcb-xfixes0 \
+    libxcb-xinput0 \
+    libxcb-xkb1 \
+    libxcb-xrm0 && \
+    rm -rf /var/lib/apt/lists/*
+
 # Add user and group, then allow sudo
 ARG UID
 ARG GID
