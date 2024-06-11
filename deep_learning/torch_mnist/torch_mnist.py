@@ -124,6 +124,9 @@ for epoch in range(EPOCH):
     test_loss_value.append(sum_loss * BATCH_SIZE / len(testloader.dataset))
     test_acc_value.append(float(sum_correct / sum_total))
 
+# save model
+torch.save(net.state_dict(), os.path.join(PATH, "model", "model.pth"))
+
 plt.figure(figsize=(6, 6))  # グラフ描画用
 
 # 以下グラフ描画

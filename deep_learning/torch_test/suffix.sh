@@ -8,3 +8,4 @@ sudo apt  install libxcb-keysyms1
 sudo apt install libxcb-render-util0
 sudo apt install libxcb-shape0
 sudo apt install libxcb-xinerama0
+sudo apt-get install -y libsm6 libxext
