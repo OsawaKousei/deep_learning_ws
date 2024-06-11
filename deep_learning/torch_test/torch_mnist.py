@@ -1,14 +1,17 @@
+import os
+
 import matplotlib.pyplot as plt  # グラフ出力用module
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision
+from model import Net
 
 BATCH_SIZE = 100
 WEIGHT_DECAY = 0.005
 LEARNING_RATE = 0.0001
-EPOCH = 20
-PATH = "dataset"
+EPOCH = 1
+PATH = "./deep_learning/torch_test/"
 
 transform = torchvision.transforms.Compose(
     [
@@ -17,45 +20,27 @@ transform = torchvision.transforms.Compose(
     ]
 )
 
+# road data
 trainset = torchvision.datasets.MNIST(
-    root=PATH, train=True, download=True, transform=transform
+    root=PATH,
+    train=True,
+    download=True,
+    transform=transform,
 )
+
 trainloader = torch.utils.data.DataLoader(
     trainset, batch_size=BATCH_SIZE, shuffle=True, num_workers=1
 )
 
 testset = torchvision.datasets.MNIST(
-    root=PATH, train=False, download=True, transform=transform
+    root=PATH,
+    train=False,
+    download=True,
+    transform=transform,
 )
 testloader = torch.utils.data.DataLoader(
     testset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1
 )
-
-
-class Net(nn.Module):
-    def __init__(self) -> None:
-        super(Net, self).__init__()
-        self.relu = nn.ReLU()
-        self.pool = nn.MaxPool2d(2, stride=2)
-
-        self.conv1 = nn.Conv2d(1, 16, 3)
-        self.conv2 = nn.Conv2d(16, 32, 3)
-
-        self.fc1 = nn.Linear(32 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 10)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.conv1(x)
-        x = self.relu(x)
-        x = self.pool(x)
-        x = self.conv2(x)
-        x = self.relu(x)
-        x = self.pool(x)
-        x = x.view(x.size()[0], -1)
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.fc2(x)
-        return x
 
 
 device = torch.device("cuda:0")
@@ -146,7 +131,7 @@ plt.xlabel("EPOCH")
 plt.ylabel("LOSS")
 plt.legend(["train loss", "test loss"])
 plt.title("loss")
-plt.savefig("loss_image.png")
+plt.savefig(os.path.join(PATH, "imgs", "loss_image.png"))
 plt.clf()
 
 plt.plot(range(EPOCH), train_acc_value)
@@ -157,5 +142,6 @@ plt.xlabel("EPOCH")
 plt.ylabel("ACCURACY")
 plt.legend(["train acc", "test acc"])
 plt.title("accuracy")
-plt.savefig("accuracy_image.png")
+plt.savefig(os.path.join(PATH, "imgs", "accuracy_image.png"))
+print(os.path.join(PATH, "imgs", "accuracy_image.png"))
 plt.show()
