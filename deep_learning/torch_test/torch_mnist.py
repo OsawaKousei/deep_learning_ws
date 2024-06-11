@@ -22,7 +22,7 @@ transform = torchvision.transforms.Compose(
 
 # road data
 trainset = torchvision.datasets.MNIST(
-    root=PATH,
+    root=os.path.join(PATH, "dataset"),
     train=True,
     download=True,
     transform=transform,
@@ -33,7 +33,7 @@ trainloader = torch.utils.data.DataLoader(
 )
 
 testset = torchvision.datasets.MNIST(
-    root=PATH,
+    root=os.path.join(PATH, "dataset"),
     train=False,
     download=True,
     transform=transform,
