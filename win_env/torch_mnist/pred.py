@@ -44,26 +44,17 @@ for img_path in img_path_list:
 data = np.array(data)
 data = tensor(data)
 
-# # 画像データ・正解ラベルのペアをデータにセットする
-# dataset = torch.utils.data.TensorDataset(data)
-
 # セットしたデータをバッチサイズごとの配列に入れる。
 loader = utils.data.DataLoader(data, batch_size=128, shuffle=False)
 
 # データ数を取得
 data_size = len(img_path_list)
 
-# device = torch.device("cuda:0")
-# net = net.to(device)
-
 # prediction
 inputs = data
-# inputs = inputs.to(device)
 outputs = net(inputs)
 _, predicted = max(outputs, 1)
 
 # 各画像データに対する予測結果を出力
 for i, img_path in enumerate(img_path_list):
     print(predicted[i].item())
-    # plt.imshow(cv2.imread(img_path))
-    # plt.show()

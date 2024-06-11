@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 
@@ -45,7 +44,7 @@ class Net(nn.Module):
         )
         nn.init.kaiming_normal_(self.fc2.weight)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         x = self.relu(self.conv1(x))
         x = self.relu(self.conv2(x))
         x = self.pool(x)
